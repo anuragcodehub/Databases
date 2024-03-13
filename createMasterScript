@@ -1,0 +1,15 @@
+## script for bat file to create single master script of all individual sql files
+
+echo off
+rem change value of below 2 variables for your project
+set project_name=DB_SCRIPTS
+set project_home=%cd%
+
+echo clean folder start...
+CD %project_home%\MASTER_SCRIPT
+del /Q *.*
+echo clean folder complete...
+
+CD %project_home%\SCRIPTS
+for /R %%f in (*.sql) do type %%f >> %project_home%\MASTER_SCRIPT\%project_name%_MASTER_DB_SCRIPT.sql
+echo database package generation end...

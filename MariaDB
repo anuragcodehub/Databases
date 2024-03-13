@@ -4,3 +4,154 @@ MariaDB Server stands out as a widely embraced open-source relational database, 
 
 https://mariadb.com/kb/en/sql-statements/
 
+
+#Sample SQL Scripts
+
+##Create Table, Insert Scripts , Stored Proc
+
+CREATE TABLE IF NOT EXISTS `APP_REF_DATA` (
+  `R_ID` int(11) NOT NULL AUTO_INCREMENT,
+  `CODE` varchar(20) DEFAULT NULL,
+  `LABEL` varchar(255) DEFAULT NULL,
+  `TYPE` varchar(255) DEFAULT NULL,
+  `SORT_ORDER` int(5) DEFAULT NULL,
+  `IS_DEFAULT` tinyint(1) DEFAULT NULL,
+  `IS_ACTIVE` tinyint(1) DEFAULT NULL,
+  `CREATED_BY` varchar(50) DEFAULT NULL,
+  `CREATED_ON` datetime DEFAULT NULL,
+  `UPDATED_BY` varchar(50) DEFAULT NULL,
+  `UPDATED_ON` datetime DEFAULT NULL,
+  PRIMARY KEY (`R_ID`)
+);
+
+INSERT INTO APP_REF_DATA (R_ID,CODE, LABEL, TYPE, SORT_ORDER, IS_DEFAULT, IS_ACTIVE, CREATED_BY, CREATED_ON, UPDATED_BY, UPDATED_ON) VALUES
+(1,'USEMP', 'Employee', 'userType', 1, 0, 1, 'System', NOW(), 'System', NOW()),
+(2,'USADM', 'Admin', 'userType', 2, 0, 1, 'System', NOW(), 'System', NOW())
+ON DUPLICATE KEY UPDATE R_ID=values(R_ID),CODE=values(CODE), LABEL=values(LABEL), TYPE=values(TYPE), SORT_ORDER=values(SORT_ORDER), IS_DEFAULT=values(IS_DEFAULT), IS_ACTIVE=values(IS_ACTIVE), CREATED_BY=values(CREATED_BY), CREATED_ON=values(CREATED_ON), UPDATED_BY=values(UPDATED_BY), UPDATED_ON=values(UPDATED_ON);
+
+CREATE TABLE IF NOT EXISTS `APP_USERS` (
+  `USER_ID` int(11) NOT NULL AUTO_INCREMENT,
+  `USER_TYPE_ID` int(11) DEFAULT NULL,
+  `USERNAME` varchar(20) DEFAULT NULL,
+  `FIRST_NAME` varchar(55) DEFAULT NULL,
+  `LAST_NAME` varchar(55) DEFAULT NULL,
+  `IS_ACTIVE` tinyint(1) DEFAULT NULL,
+  `CREATED_BY` varchar(20) DEFAULT NULL,
+  `CREATED_ON` datetime DEFAULT NULL,
+  `UPDATED_BY` varchar(20) DEFAULT NULL,
+  `UPDATED_ON` datetime DEFAULT NULL,
+  PRIMARY KEY (`USER_ID`),
+  KEY `USER_TYPE_ID` (`USER_TYPE_ID`),
+  KEY `USER_NAME` (`USERNAME`),
+  CONSTRAINT `APP_USERS_ibfk_1` FOREIGN KEY (`USER_TYPE_ID`) REFERENCES `APP_REF_DATA` (`R_ID`)
+);
+
+INSERT INTO APP_USERS (USER_ID,USER_TYPE_ID, USERNAME, FIRST_NAME, LAST_NAME,IS_ACTIVE, CREATED_BY, CREATED_ON, UPDATED_BY, UPDATED_ON) VALUES
+(1,1, 'APPIAN_USER1', 'Basic', 'User',1, 'System', NOW(), 'System', NOW()),
+(2,2, 'APPIAN_USER2', 'Admin', 'User', 1, 'System', NOW(), 'System', NOW())
+ON DUPLICATE KEY UPDATE USER_ID=values(USER_ID),USER_TYPE_ID=values(USER_TYPE_ID), USERNAME=values(USERNAME), FIRST_NAME=values(FIRST_NAME), LAST_NAME=values(LAST_NAME),IS_ACTIVE=values(IS_ACTIVE), CREATED_BY=values(CREATED_BY), CREATED_ON=values(CREATED_ON), UPDATED_BY=values(UPDATED_BY), UPDATED_ON=values(UPDATED_ON);
+
+-------------------------------------------
+ -- call APP_GET_EMPLOYEE_DATA_PICKER_SP('Basic',@status,@errorMessage);
+-----------------------------------------
+DELIMITER
+    $$
+CREATE OR REPLACE PROCEDURE `APP_GET_EMPLOYEE_DATA_PICKER_SP`(
+    IN p_filter VARCHAR(255),
+    INOUT SP_STATUS TINYINT(1),
+    INOUT SP_ERROR_MESSAGE VARCHAR(4000)
+)
+BEGIN
+    DECLARE
+        sql_state_code VARCHAR(5) DEFAULT '00000' ; DECLARE error_number INT ; DECLARE MESSAGE_TEXT VARCHAR(1000) ; DECLARE error_message VARCHAR(4000) ;
+        -- ==================================================
+        -- ERROR HANDLING
+        -- ===================================================  
+        -- Error handler for exceptions
+        DECLARE EXIT
+    HANDLER FOR SQLEXCEPTION
+BEGIN
+    ROLLBACK
+        ; GET DIAGNOSTICS CONDITION 1 sql_state_code = RETURNED_SQLSTATE,
+        error_number = MYSQL_ERRNO,
+        MESSAGE_TEXT = MESSAGE_TEXT ;
+    SET
+        @error_message = CONCAT(
+            "Message Text: ",
+            COALESCE(MESSAGE_TEXT, 'n/a'),
+            " | SQLState: ",
+            COALESCE(sql_state_code, 'n/a'),
+            " | ErrNo: ",
+            COALESCE(error_number, 'n/a')
+        ) ;
+    SET
+        SP_STATUS = 0 ;
+    SET
+        SP_ERROR_MESSAGE = @error_message ;
+    SELECT
+        @error_message ;
+END ;
+-- Error handler for warnings
+DECLARE EXIT
+HANDLER FOR SQLWARNING
+BEGIN
+    ROLLBACK
+        ; GET DIAGNOSTICS CONDITION 1 sql_state_code = RETURNED_SQLSTATE,
+        error_number = MYSQL_ERRNO,
+        MESSAGE_TEXT = MESSAGE_TEXT ;
+    SET
+        @error_message = CONCAT(
+            "Message Text: ",
+            COALESCE(MESSAGE_TEXT, 'n/a'),
+            " | SQLState: ",
+            COALESCE(sql_state_code, 'n/a'),
+            " | ErrNo: ",
+            COALESCE(error_number, 'n/a')
+        ) ;
+    SET
+        SP_STATUS = 0 ;
+    SET
+        SP_ERROR_MESSAGE = @error_message ;
+    SELECT
+        @error_message ;
+END ;
+-- ==================================================
+-- SP LOGIC
+-- ===================================================  
+SET
+    @filter_val = CONCAT('\'', p_filter, '%', '\'') ;
+SET
+    @selectSql = 'SELECT USERNAME,FIRST_NAME,LAST_NAME FROM APP_USERS USE INDEX (USER_NAME)' ;
+SET
+    @sql_filters = CONCAT(
+        'IS_ACTIVE = 1 AND( USERNAME LIKE ',
+        @filter_val,
+        ' OR FIRST_NAME LIKE ',
+        @filter_val,
+        ' OR LAST_NAME LIKE ',
+        @filter_val,
+        '
+            )'
+    ) ;
+SET
+    @selectSql = CONCAT(@selectSql, ' WHERE ', @sql_filters) ;
+SET
+    @sqlStmt = @selectSql ;
+PREPARE
+    stmt
+FROM
+    @sqlStmt ;
+EXECUTE
+    stmt ;
+DEALLOCATE
+PREPARE
+    stmt ; END $$
+DELIMITER
+    ;
+
+
+
+
+
+
+

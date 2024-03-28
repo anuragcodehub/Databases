@@ -3,3 +3,63 @@ https://www.oracle.com/in/database/
 Oracle's database services and products provide customers with cost-optimized and high-performance options for Oracle Database, a leading converged, multi-model database management system. These offerings also include in-memory, NoSQL, and MySQL databases.
 
 https://www.oracle.com/in/database/technologies/appdev/sql.html
+
+Certainly! Below are sample database scripts for creating tables, views, functions, stored procedures, triggers, and insert scripts in an Oracle database. You can modify these scripts as needed for your specific requirements:
+
+### Table Creation Script:
+```sql
+CREATE TABLE employees (
+    employee_id NUMBER PRIMARY KEY,
+    first_name VARCHAR2(50),
+    last_name VARCHAR2(50),
+    hire_date DATE,
+    salary NUMBER
+);
+```
+
+### View Creation Script:
+```sql
+CREATE VIEW employee_view AS
+SELECT employee_id, first_name, last_name
+FROM employees
+WHERE salary > 50000;
+```
+
+### Function Creation Script:
+```sql
+CREATE OR REPLACE FUNCTION calculate_bonus(salary NUMBER) RETURN NUMBER IS
+    bonus NUMBER;
+BEGIN
+    bonus := salary * 0.1;
+    RETURN bonus;
+END;
+```
+
+### Stored Procedure Creation Script:
+```sql
+CREATE OR REPLACE PROCEDURE update_salary(employee_id NUMBER, new_salary NUMBER) IS
+BEGIN
+    UPDATE employees
+    SET salary = new_salary
+    WHERE employee_id = employee_id;
+    COMMIT;
+END;
+```
+
+### Trigger Creation Script:
+```sql
+CREATE OR REPLACE TRIGGER before_employee_insert
+BEFORE INSERT ON employees
+FOR EACH ROW
+BEGIN
+    :NEW.hire_date := SYSDATE;
+END;
+```
+
+### Insert Script:
+```sql
+INSERT INTO employees (employee_id, first_name, last_name, hire_date, salary)
+VALUES (1, 'John', 'Doe', TO_DATE('2024-03-28', 'YYYY-MM-DD'), 60000);
+```
+
+You can run these scripts in your Oracle database environment to create the necessary database objects and populate data. Feel free to customize them further to suit your specific needs.

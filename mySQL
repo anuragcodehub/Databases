@@ -1,0 +1,61 @@
+
+### Table Creation Script:
+```sql
+CREATE TABLE employees (
+    employee_id INT PRIMARY KEY,
+    first_name VARCHAR(50),
+    last_name VARCHAR(50),
+    hire_date DATE,
+    salary DECIMAL(10, 2)
+);
+```
+
+### View Creation Script:
+```sql
+CREATE VIEW employee_view AS
+SELECT employee_id, first_name, last_name
+FROM employees
+WHERE salary > 50000;
+```
+
+### Function Creation Script:
+```sql
+DELIMITER //
+CREATE FUNCTION calculate_bonus(salary DECIMAL(10, 2)) RETURNS DECIMAL(10, 2)
+BEGIN
+    DECLARE bonus DECIMAL(10, 2);
+    SET bonus = salary * 0.1;
+    RETURN bonus;
+END //
+DELIMITER ;
+```
+
+### Stored Procedure Creation Script:
+```sql
+DELIMITER //
+CREATE PROCEDURE update_salary(employee_id INT, new_salary DECIMAL(10, 2))
+BEGIN
+    UPDATE employees
+    SET salary = new_salary
+    WHERE employee_id = employee_id;
+END //
+DELIMITER ;
+```
+
+### Trigger Creation Script:
+```sql
+CREATE TRIGGER before_employee_insert
+BEFORE INSERT ON employees
+FOR EACH ROW
+BEGIN
+    SET NEW.hire_date = CURDATE();
+END;
+```
+
+### Insert Script:
+```sql
+INSERT INTO employees (employee_id, first_name, last_name, hire_date, salary)
+VALUES (1, 'John', 'Doe', '2024-03-28', 60000.00);
+```
+
+You can run these scripts in your MySQL database environment to create the necessary database objects and populate data. Feel free to customize them further to suit your specific needs.

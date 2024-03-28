@@ -1,0 +1,65 @@
+
+### Table Creation Script:
+```sql
+CREATE TABLE employees (
+    employee_id SERIAL PRIMARY KEY,
+    first_name VARCHAR(50),
+    last_name VARCHAR(50),
+    hire_date DATE,
+    salary NUMERIC(10, 2)
+);
+```
+
+### View Creation Script:
+```sql
+CREATE VIEW employee_view AS
+SELECT employee_id, first_name, last_name
+FROM employees
+WHERE salary > 50000;
+```
+
+### Function Creation Script:
+```sql
+CREATE OR REPLACE FUNCTION calculate_bonus(salary NUMERIC) RETURNS NUMERIC AS $$
+DECLARE
+    bonus NUMERIC;
+BEGIN
+    bonus := salary * 0.1;
+    RETURN bonus;
+END;
+$$ LANGUAGE plpgsql;
+```
+
+### Stored Procedure Creation Script:
+```sql
+CREATE OR REPLACE PROCEDURE update_salary(employee_id INT, new_salary NUMERIC) AS $$
+BEGIN
+    UPDATE employees
+    SET salary = new_salary
+    WHERE employee_id = employee_id;
+END;
+$$ LANGUAGE plpgsql;
+```
+
+### Trigger Creation Script:
+```sql
+CREATE OR REPLACE FUNCTION before_employee_insert_function() RETURNS TRIGGER AS $$
+BEGIN
+    NEW.hire_date := CURRENT_DATE;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER before_employee_insert
+BEFORE INSERT ON employees
+FOR EACH ROW
+EXECUTE FUNCTION before_employee_insert_function();
+```
+
+### Insert Script:
+```sql
+INSERT INTO employees (first_name, last_name, hire_date, salary)
+VALUES ('John', 'Doe', '2024-03-28', 60000.00);
+```
+
+You can run these scripts in your PostgreSQL database environment to create the necessary database objects and populate data. Customize them further as per your specific requirements.
